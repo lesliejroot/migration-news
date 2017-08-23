@@ -1,0 +1,81 @@
+---
+title: "Descriptives of metadata"
+author: "Monica Alexander"
+date: "August 23, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Calculate a few summary descriptives of the data that we have. 
+
+```{r, message=FALSE}
+library(plyr)
+library(tidyverse)
+library(lubridate)
+
+# read in all the meta data acsv files
+csv_files <- paste0("../data/raw/", list.files(path = "../data/raw",pattern = ".*.csv"))
+md <- do.call(rbind.fill, lapply(csv_files, read_csv))
+```
+Number of articles by year:
+
+```{r}
+
+# number of articles by year
+md %>% 
+  group_by(year) %>% 
+  summarise(n = n())
+```
+
+```{r}
+# plot number of articles by source and year
+
+source_year <- md %>% 
+  group_by(year, pubtitle) %>% 
+  summarise(n = n())
+
+ggplot(source_year, aes(year, n, color = pubtitle)) + 
+  geom_point() + geom_line() + 
+  scale_x_continuous(breaks=seq(2008,2017, by =2))+ 
+  theme_minimal() + scale_color_brewer(palette="Set1", name = "Source") +
+  ylab("Number") + xlab("Year") + ggtitle("Number of articles by year and source") 
+ggsave("../plots/source_year.pdf")
+```
+
+```{r}
+# make publication date consistent
+
+md$date_char <- NA
+
+for(i in 1:nrow(md)){
+  if(grepl(",", md$pubdate[i])){
+    split_date <- strsplit(md$pubdate[i], split = " ")[[1]]
+    dt <- paste(gsub(",", "", split_date[2]), split_date[1], substr(split_date[3], 3, 4), sep = "-")
+  }
+  else{
+    dt <- md$pubdate[i]
+  }
+  md$date_char[i] <- dt
+}
+
+md$date <- dmy(md$date_char)
+
+# this is not that useful
+# but note 9/11 coverage 
+md %>% group_by(date, pubtitle) %>%
+  summarise(Number = n()) %>% 
+  arrange(-Number) %>% filter(Number > 5)
+
+```
+
+```{r}
+# look at subjects of articles
+subjects_list <- strsplit(md$subjectTerms, split = " , ")
+subjects_vec <- unlist(subjects_list)
+subject_counts <- sort(table(subjects_vec), decreasing = T)
+head(subject_counts, 20)
+```
+
