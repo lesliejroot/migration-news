@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Calculate a few summary descriptives of the data that we have. 
+Calculate a few summary descriptives of the data that we have based on the metadata in the csv files. 
 
 ```{r, message=FALSE}
 library(plyr)
@@ -30,6 +30,8 @@ md %>%
   summarise(n = n())
 ```
 
+Plot number of articles by source and year:
+
 ```{r}
 # plot number of articles by source and year
 
@@ -43,7 +45,11 @@ ggplot(source_year, aes(year, n, color = pubtitle)) +
   theme_minimal() + scale_color_brewer(palette="Set1", name = "Source") +
   ylab("Number") + xlab("Year") + ggtitle("Number of articles by year and source") 
 ggsave("../plots/source_year.pdf")
+
+write_csv(source_year, path = "../tables/source_year.csv")
 ```
+
+Fixing up date column. May be useful later. 
 
 ```{r}
 # make publication date consistent
@@ -71,11 +77,77 @@ md %>% group_by(date, pubtitle) %>%
 
 ```
 
+Look at subject classifications
+
 ```{r}
 # look at subjects of articles
 subjects_list <- strsplit(md$subjectTerms, split = " , ")
 subjects_vec <- unlist(subjects_list)
 subject_counts <- sort(table(subjects_vec), decreasing = T)
 head(subject_counts, 20)
+write_csv(as.data.frame(subject_counts), path = "../tables/subjects_counts.csv")
+```
+
+Subjects by source type:
+
+```{r}
+sources <- unique(md$pubtitle)
+subject_all_sources <- c()
+for(i in 1:length(sources)){
+  subjects_source <- unlist(subjects_list[which(md$pubtitle==sources[i])])
+  subjects_source_count <- sort(table(subjects_source), decreasing = T)
+  subjects_source_df <- as.data.frame(subjects_source_count)
+  subjects_source_df$source <- sources[i]
+  subject_all_sources <- rbind(subject_all_sources, subjects_source_df)
+}
+
+# calculate proportion 
+subject_all_sources <- subject_all_sources %>% 
+  group_by(source) %>% 
+  mutate(prop = Freq/sum(Freq))
+
+subject_all_sources %>% 
+  group_by(source) %>% 
+  top_n(n= 5)
+
+write_csv(subject_all_sources, path = "../tables/subject_source.csv")
+```
+
+Subjects by year:
+
+```{r}
+years <- unique(md$year)
+subject_all_years <- c()
+for(i in 1:length(years)){
+  subjects_year <- unlist(subjects_list[which(md$year==years[i])])
+  subjects_year_count <- sort(table(subjects_year), decreasing = T)
+  subjects_year_df <- as.data.frame(subjects_year_count)
+  subjects_year_df$year <- years[i]
+  subject_all_years <- rbind(subject_all_years, subjects_year_df)
+}
+
+# calculate proportion 
+subject_all_years <- subject_all_years %>% 
+  group_by(year) %>% 
+  mutate(prop = Freq/sum(Freq))
+
+write_csv(subject_all_years, path = "../tables/subject_year.csv")
+```
+
+```{r}
+top5 <- subject_all_years %>% 
+  group_by(year) %>% 
+  top_n(n= 5)
+
+subs <- as.character(unique(top5$subjects_year))
+
+big_subs <- subject_all_years %>% filter(subjects_year %in% subs)
+
+ggplot(big_subs, aes(year, prop, color = subjects_year)) + 
+  geom_point() + geom_line() + 
+  scale_x_continuous(breaks=seq(2008,2017, by =2))+ 
+  theme_minimal() + scale_color_discrete(name = "Subject") +
+  ylab("Propotion") + xlab("Year") + ggtitle("Proportion of articles mentioning subject") 
+ggsave("../plots/subject_year.pdf")
 ```
 
