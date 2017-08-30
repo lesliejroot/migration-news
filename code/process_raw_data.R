@@ -1,5 +1,5 @@
 library(tidyverse)
-source("./code/functions/process_helpers.R")
+source("./code/functions/extract_full_text_id.R")
 
 text_files <- list.files(path = "./data/raw",pattern = ".*.txt")
 

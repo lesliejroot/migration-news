@@ -14,8 +14,14 @@ extract_full_text_id <- function(document_text_file # the name of a text file co
     
     # get full text
     initial_pull <- tx[start_of_text[i]:(sep_lines[i+1]-1)]
-    start_of_meta <- match("", initial_pull)
-    # note: assuming the start of the meta data starts after the first blank line ("") is imperfect 
+    blank_lines <- which(!is.na(match(initial_pull, "")))
+    if(length(blank_lines)>2){
+      start_of_meta <- which(diff(blank_lines)==2)[1]
+    }
+    else{
+      start_of_meta <- blank_lines[1]
+    }
+    # note: assuming the start of the meta data starts after the first blank line ("") and where the next blank line is 2 lines away is imperfect 
     # alot of the documents have credits, photo info etc at the end
     # it will do for now. 
     final_pull <- initial_pull[1:(start_of_meta-1)]
