@@ -15,8 +15,8 @@ get_word_counts_meta <- function(text_id_list # must be a list with a text eleme
   word_counts <- tidy_text %>%
     count(word, sort = TRUE) 
   
-  meta_df$immigra_count <- length(grep("immigra*", word_counts$word))
-  meta_df$population_count <- length(grep("population", word_counts$word))
+  meta_df$immigra_count <- length(grep("immigra*", text_id_list$text))
+  meta_df$population_count <- length(grep("population", text_id_list$text))
   
   return(list(word_counts_df = word_counts, 
               meta_df = meta_df
