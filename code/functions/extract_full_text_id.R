@@ -16,7 +16,7 @@ extract_full_text_id <- function(document_text_file # the name of a text file co
     initial_pull <- tx[start_of_text[i]:(sep_lines[i+1]-1)]
     blank_lines <- which(!is.na(match(initial_pull, "")))
     if(length(blank_lines)>2){
-      start_of_meta <- which(diff(blank_lines)==2)[1]
+      start_of_meta <-blank_lines[which(diff(blank_lines)==2)[1]]
     }
     else{
       start_of_meta <- blank_lines[1]
