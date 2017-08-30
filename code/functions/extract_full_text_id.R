@@ -5,7 +5,7 @@ extract_full_text_id <- function(document_text_file # the name of a text file co
   
   tx <- read_lines(document_text_file)
   start_of_text <- grep("Full text: ", tx)
-  sep_lines <- grep("___________________", tx) # every document is separated by these underscores
+  sep_lines <- grep("^____________________________________________________________$", tx) # every document is separated by these underscores
   
   documents <- list()
   for (i in 1:length(start_of_text)){
