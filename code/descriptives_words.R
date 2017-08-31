@@ -66,4 +66,15 @@ ggplot(all_meta %>%
   ggtitle("Average word count by source")
 ggsave("plots/wordcount_source_year.pdf")
 
-# by 
+# by document_category
+
+ggplot(all_meta %>%
+         group_by(year, document_category) %>%
+         summarise(ave_word = mean(word_count)), 
+       aes(year, ave_word, color = document_category))+
+  geom_line() + geom_point() +
+  scale_color_brewer(palette = "Set2") + 
+  theme_bw()+
+  ylab("Average")+
+  ggtitle("Average word count by category")
+ggsave("plots/wordcount_category_year.pdf")
