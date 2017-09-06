@@ -38,6 +38,20 @@ all_meta <- all_meta %>%
     TRUE ~ "both"
   ))
 
+# categorize article type based on reduced categories 
+
+table(all_meta$documentType)
+
+all_meta <- all_meta %>% 
+  mutate(document_type = case_when(
+    documentType %in% c("News", "NEWSPAPER", "<none> , News") ~ "news",
+    documentType %in% c("Commentary", "Editorial", "Op-Ed", "Opinions") ~ "commentary",
+    documentType %in% c("Feature", "Series", "News , Series", "News; Series") ~ "feature/series",
+    TRUE ~ "other"
+  ))
+
+
+
 ### some plots
 
 ## plot of document category by year
@@ -78,3 +92,27 @@ ggplot(all_meta %>%
   ylab("Average")+
   ggtitle("Average word count by category")
 ggsave("plots/wordcount_category_year.pdf")
+
+# by document_type
+ggplot(all_meta %>%
+         group_by(year, document_type) %>%
+         summarise(ave_word = mean(word_count)) %>% 
+         filter(document_type!="other"), 
+       aes(year, ave_word, color = document_type))+
+  geom_line() + geom_point() +
+  scale_color_brewer(palette = "Set2", name = "Type") + 
+  theme_bw()+
+  ylab("Average")+
+  ggtitle("Average word count by main document type")
+ggsave("plots/wordcount_type_year.pdf")
+
+ggplot(all_meta %>%
+         group_by(year, document_type) %>%
+         summarise(n = n()), 
+       aes(year, n, color = document_type))+
+  geom_line() + geom_point() +
+  scale_color_brewer(palette = "Set2", name = "Type") + 
+  theme_bw()+
+  ylab("Number")+
+  ggtitle("Number of articles by document type")
+
