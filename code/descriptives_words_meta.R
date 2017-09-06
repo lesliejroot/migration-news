@@ -1,6 +1,7 @@
 library(tidyverse)
 library(tidytext)
 
+# 1. Load in meta data and create some new columns ------------------------
 
 ## load in all meta data from word counts
 
@@ -52,7 +53,7 @@ all_meta <- all_meta %>%
 
 
 
-### some plots
+# 2. Do some plots --------------------------------------------------------
 
 ## plot of document category by year
 
@@ -65,6 +66,18 @@ ggplot(all_meta %>%
   ylab("number of articles")+
   ggtitle("Number of articles by category (based on more common keyword)")
 ggsave("plots/category_year.pdf")
+
+## plot of document type by year 
+
+ggplot(all_meta %>%
+         group_by(year, document_type) %>%
+         summarise(n = n()), 
+       aes(year, n, color = document_type))+
+  geom_line() + geom_point() +
+  scale_color_brewer(palette = "Set2", name = "Type") + 
+  theme_bw()+
+  ylab("Number")+
+  ggtitle("Number of articles by document type")
 
 ## average word length
 
@@ -106,13 +119,9 @@ ggplot(all_meta %>%
   ggtitle("Average word count by main document type")
 ggsave("plots/wordcount_type_year.pdf")
 
-ggplot(all_meta %>%
-         group_by(year, document_type) %>%
-         summarise(n = n()), 
-       aes(year, n, color = document_type))+
-  geom_line() + geom_point() +
-  scale_color_brewer(palette = "Set2", name = "Type") + 
-  theme_bw()+
-  ylab("Number")+
-  ggtitle("Number of articles by document type")
+
+
+
+
+
 
