@@ -1,3 +1,4 @@
+### This code generates mostly average word counts by various categories 
 library(tidyverse)
 library(tidytext)
 
