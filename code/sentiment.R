@@ -120,3 +120,32 @@ ggplot(word_sent_year %>% filter(word %in% main_sent_words[[1]],
   geom_line()
 
 
+##
+
+afinn <- word_df %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  filter(word!="trump") %>%
+  inner_join(all_meta %>% 
+               select(year, StoreId, word_count)) %>%
+  group_by(year) %>% 
+  summarise(sentiment = sum(score)) %>% 
+  mutate(method = "AFINN", index = year) 
+
+bing_and_nrc <- bind_rows(word_df %>% 
+                            inner_join(get_sentiments("bing")) %>%
+                            filter(word!="trump") %>%
+                            mutate(method = "Bing et al."),
+                          word_df %>% 
+                            inner_join(get_sentiments("nrc") %>% 
+                                         filter(sentiment %in% c("positive", 
+                                                                 "negative"),word!="trump")) %>%
+                            mutate(method = "NRC")) %>%
+  inner_join(all_meta %>% 
+               select(year, StoreId, word_count)) %>%
+  count(method, index = year, sentiment) %>%
+  spread(sentiment, nn, fill = 0) %>%
+  mutate(sentiment = positive - negative)
+
+bind_rows(afinn, 
+          bing_and_nrc) %>%
+  ggplot(aes(index, sentiment, color = method)) + geom_line()
