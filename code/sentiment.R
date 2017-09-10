@@ -15,6 +15,7 @@ for(i in 1:5){
 ## also load in meta data to get document IDs
 
 ## load in all meta data from word counts
+## load in all meta data from word counts
 
 meta_word_df <- c()
 
@@ -24,6 +25,34 @@ for(i in 1:5){
 }
 
 
+## load in existing meta data that was pulled from ProQuest
+
+csv_files <- list.files(path = "./data/raw",pattern = ".*.csv")
+csv_files <- paste0("./data/raw/", csv_files)
+
+meta_df <- c()
+
+for(i in 1:length(csv_files)){
+  this_meta <- read_csv(csv_files[i])
+  meta_df <- bind_rows(meta_df, this_meta )
+}
+
+
+## join the two meta dfs
+
+all_meta <- left_join(meta_df, meta_word_df, by = c("StoreId" = "id"))
+
+# categorize article as either population or immigration-related based on the counts
+
+all_meta <- all_meta %>% 
+  mutate(document_category = case_when(
+    immigra_count > population_count ~ "immigration",
+    population_count > immigra_count ~ "population",
+    TRUE ~ "both"
+  ))
+
+
+# join to word df 
 word_df <- word_df %>%
   inner_join(all_meta %>% select(document_number, StoreId))
 
@@ -149,3 +178,5 @@ bing_and_nrc <- bind_rows(word_df %>%
 bind_rows(afinn, 
           bing_and_nrc) %>%
   ggplot(aes(index, sentiment, color = method)) + geom_line()
+
+
