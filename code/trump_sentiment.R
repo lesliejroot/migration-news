@@ -67,13 +67,33 @@ word_df <- word_df %>%
 
 word_df <- word_df %>%
   group_by(StoreId) %>%
-  mutate(mention_trump = any(word=="trump"))
+  mutate(mention_trump = (any(word=="trump")&any(word=="donald")))
 
 
 # number of articles that mention trump
+# can only do this from 2015
 word_df %>% group_by(StoreId) %>%
   summarise(mt = mean(mention_trump)) %>%
-  group_by(mt) %>%
+  inner_join(all_meta %>% 
+               select(year, StoreId, word_count)) %>%
+  group_by(mt, year) %>%
   summarise(n())
 
 
+# simple sentiment by trump v not 
+
+afinn <- word_df %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  filter(word!="trump") %>%
+  inner_join(all_meta %>% 
+               select(year, StoreId, word_count)) %>%
+  group_by(year, mention_trump, StoreId) %>% 
+  summarise(sentiment = sum(score)) %>%
+  group_by(year, mention_trump) %>%
+  summarise(ave_sentiment = mean(sentiment),
+            sd_sentiment = sd(sentiment)) %>% 
+  mutate(method = "AFINN", index = year) 
+
+ggplot(afinn %>% filter(year>2014), 
+       aes(year, ave_sentiment, color = mention_trump)) + geom_line()
+  
