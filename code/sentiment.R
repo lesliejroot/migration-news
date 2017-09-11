@@ -151,6 +151,30 @@ ggplot(word_sent_year %>% filter(word %in% main_sent_words[[1]],
                                  sentiment=="positive"), aes(year, prop_word, color = word)) + 
   geom_line()
 
+## might be nice to see as a bar plot
+
+pd <- word_sent_year %>%
+  group_by(sentiment, year) %>%
+  top_n(10, wt = n_word) %>%
+  ungroup() %>%
+  arrange(year, sentiment, n_word) %>%
+  mutate(order=row_number())
+
+
+  ggplot(pd, aes(order, n_word, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(sentiment~year, scales = "free") +
+  labs(y = "Contribution to sentiment",
+       x = NULL) +
+    scale_x_continuous(
+      breaks = pd$order,
+      labels = pd$word,
+      expand = c(0,0)
+    ) +
+  coord_flip()+
+    ggtitle("Top positive and negative words by year")
+
+
 
 ##
 
