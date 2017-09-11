@@ -102,6 +102,11 @@ bing_words <- word_df %>%
 
 ggplot(bing_words, aes(year, ave_prop_sent)) + facet_grid(.~sentiment) + geom_line()
 
+
+
+# 3. top words ------------------------------------------------------------
+
+
 # look at top positive and negative words by year?
 
 word_sent_year <- word_df %>%
@@ -183,6 +188,11 @@ ggplot(pd, aes(order, n_word, fill = sentiment)) +
   coord_flip()+
   ggtitle("Top positive and negative words by period")
 ggsave("plots/sent_words_period.pdf", width = 12, height = 10)
+
+
+
+# 4. Total sentiment over time --------------------------------------------
+
 
 ## total sentiment scores by each year for each of the methods
 

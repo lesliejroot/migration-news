@@ -162,4 +162,29 @@ ggplot(big_subs, aes(year, prop, color = subjects_year)) +
   ylab("Propotion") + xlab("Year") + ggtitle("Proportion of articles mentioning subject") 
 ggsave("../plots/subject_year.pdf", height = 7, width =10)
 ```
+Do some bar plots by year
+
+```{r}
+pd <- subject_all_years %>%
+  group_by(year) %>%
+  top_n(10, wt = Freq) %>%
+  ungroup() %>%
+  arrange(year, Freq) %>%
+  mutate(order=row_number())
+
+
+  ggplot(pd, aes(order, Freq)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~year, scales = "free") +
+  labs(y = "No. articles",
+       x = NULL) +
+    scale_x_continuous(
+      breaks = pd$order,
+      labels = pd$subjects_year,
+      expand = c(0,0)
+    ) +
+  coord_flip()+
+    ggtitle("Top subjects by year")
+  ggsave("../plots/subject_year_barplot.pdf", height = 10, width = 12)
+```
 
