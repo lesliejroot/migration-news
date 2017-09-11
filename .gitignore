@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 *.Rproj
+*.DS_Store
+*.Rapp.history
+code/descriptives_meta.html
