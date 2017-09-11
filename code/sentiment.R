@@ -229,11 +229,41 @@ afinn %>%
   geom_line() + geom_point()+
   theme_bw() + xlab("year") +
   ggtitle("Sentiment over time (AFINN method)")
-ggsave("")
+ggsave("./plots/sentiment_year.pdf", height = 7, width = 10)
 
 
 
 
 # 5. Tf_idf ---------------------------------------------------------------
 
+word_df <- word_df %>% 
+  bind_tf_idf(word, StoreId, n)
 
+tfidf <- word_df %>% 
+  inner_join(all_meta %>% 
+               select(year, StoreId)) %>%
+  group_by(year, word) %>% 
+  summarise(sum_tfidf = sum(tf_idf))
+
+pd <- tfidf %>%
+  group_by(year) %>%
+  top_n(10, wt = sum_tfidf) %>%
+  ungroup() %>%
+  arrange(year, sum_tfidf) %>%
+  mutate(order=row_number())
+
+
+ggplot(pd, aes(order, sum_tfidf)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~year, scales = "free") +
+  labs(y = "tf_idf (summed across all documents)",
+       x = NULL) +
+  scale_x_continuous(
+    breaks = pd$order,
+    labels = pd$word,
+    expand = c(0,0)
+  ) +
+  coord_flip()+
+  ggtitle("Important words by year")
+  
+ggsave("plots/tf_idf_year_barplot.pdf", width = 15, height = 10)
