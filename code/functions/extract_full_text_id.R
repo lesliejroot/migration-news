@@ -11,16 +11,23 @@ extract_full_text_id <- function(document_text_file # the name of a text file co
   for (i in 1:length(start_of_text)){
     bookends <- tx[sep_lines[i]:sep_lines[i+1]]
     has_ID <- length(grep("ProQuest document ID:", bookends))>0
+    has_subject <- length(grep("Subject:", bookends))>0
     
     # get full text
     initial_pull <- tx[start_of_text[i]:(sep_lines[i+1]-1)]
     blank_lines <- which(!is.na(match(initial_pull, "")))
-    if(length(blank_lines)>2){
-      start_of_meta <-blank_lines[which(diff(blank_lines)==2)[1]]
+    if(has_subject){
+      start_of_meta <- grep("Subject:", initial_pull)
     }
     else{
-      start_of_meta <- blank_lines[1]
+      if(length(blank_lines)>2){
+        start_of_meta <- blank_lines[which(diff(blank_lines)==2)[1]]
+      }
+      else{
+        start_of_meta <- blank_lines[1]
+      }
     }
+
     # note: assuming the start of the meta data starts after the first blank line ("") and where the next blank line is 2 lines away is imperfect 
     # alot of the documents have credits, photo info etc at the end
     # it will do for now. 
