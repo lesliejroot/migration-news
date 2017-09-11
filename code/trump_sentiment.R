@@ -84,7 +84,7 @@ word_df %>% group_by(StoreId) %>%
 
 afinn <- word_df %>% 
   inner_join(get_sentiments("afinn")) %>% 
-  filter(word!="trump") %>%
+  filter(word!="trump", word!="united") %>%
   inner_join(all_meta %>% 
                select(year, StoreId, word_count)) %>%
   group_by(year, mention_trump, StoreId) %>% 
@@ -97,3 +97,34 @@ afinn <- word_df %>%
 ggplot(afinn %>% filter(year>2014), 
        aes(year, ave_sentiment, color = mention_trump)) + geom_line()
   
+
+## would types of negative and positive words be interesting by trump v not?
+
+top_positive <- word_df %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  filter(word!="trump") %>%
+  inner_join(all_meta %>% 
+               select(year, StoreId, word_count)) %>% 
+  filter(year>2014) %>%
+  group_by(year, word, score) %>%
+  summarise(n_inst = sum(n)) %>%
+  ungroup() %>%
+  filter(score>0) %>%
+  filter(word!="united") %>%
+  group_by(year) %>%
+  top_n(n = 5, wt = n_inst) %>%
+  arrange(year, n_inst)
+
+top_negative <- word_df %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  filter(word!="trump") %>%
+  inner_join(all_meta %>% 
+               select(year, StoreId, word_count)) %>% 
+  filter(year>2014) %>%
+  group_by(year, word, score) %>%
+  summarise(n_inst = sum(n)) %>%
+  filter(score<0) %>%
+  filter(word!="united") %>%
+  group_by(year) %>%
+  top_n(n = 5, wt = n_inst) %>%
+  arrange(year,n_inst)
