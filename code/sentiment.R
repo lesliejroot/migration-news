@@ -224,8 +224,16 @@ bind_rows(afinn,
           bing_and_nrc) %>%
   ggplot(aes(index, sentiment, color = method)) + geom_line()
 
+afinn %>% 
+  ggplot(aes(index, sentiment)) + 
+  geom_line() + geom_point()+
+  theme_bw() + xlab("year") +
+  ggtitle("Sentiment over time (AFINN method)")
+ggsave("")
 
 
 
+
+# 5. Tf_idf ---------------------------------------------------------------
 
 
