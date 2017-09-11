@@ -66,7 +66,7 @@ ggplot(all_meta %>%
   theme_bw()+
   ylab("number of articles")+
   ggtitle("Number of articles by category (based on more common keyword)")
-ggsave("plots/category_year.pdf")
+ggsave("plots/category_year.pdf", height = 7, width =10)
 
 ## plot of document type by year 
 
@@ -92,7 +92,7 @@ ggplot(all_meta %>%
   theme_bw()+
   ylab("Average")+
   ggtitle("Average word count by source")
-ggsave("plots/wordcount_source_year.pdf")
+ggsave("plots/wordcount_source_year.pdf", height = 7, width =10)
 
 # by document_category
 
@@ -105,7 +105,7 @@ ggplot(all_meta %>%
   theme_bw()+
   ylab("Average")+
   ggtitle("Average word count by category")
-ggsave("plots/wordcount_category_year.pdf")
+ggsave("plots/wordcount_category_year.pdf", height = 7, width =10)
 
 # by document_type
 ggplot(all_meta %>%
@@ -118,7 +118,7 @@ ggplot(all_meta %>%
   theme_bw()+
   ylab("Average")+
   ggtitle("Average word count by main document type")
-ggsave("plots/wordcount_type_year.pdf")
+ggsave("plots/wordcount_type_year.pdf", height = 7, width =10)
 
 
 

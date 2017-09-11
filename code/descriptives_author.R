@@ -82,7 +82,7 @@ all_meta %>%
   ggplot(aes(year, ave_art)) + 
   geom_point() + geom_line() + 
   theme_bw() + ggtitle("Average number of articles per author")
-ggsave("./plots/ave_articles_author.pdf")
+ggsave("./plots/ave_articles_author.pdf", height = 7, width =10)
 
 
 
