@@ -46,13 +46,20 @@ all_meta <- left_join(meta_df, meta_word_df, by = c("StoreId" = "id"))
 rm(meta_df, meta_word_df)
 
 # categorize article as either population or immigration-related based on the counts
-
+# also categorize years into broader periods
 all_meta <- all_meta %>% 
   mutate(document_category = case_when(
     immigra_count > population_count ~ "immigration",
     population_count > immigra_count ~ "population",
     TRUE ~ "both"
+  ),
+  period = case_when(
+    year < 2012 ~ "2008-2011",
+    year < 2016 & year > 2011 ~ "2012-2015",
+    TRUE ~ "2016-2017"
   ))
+
+
 
 
 # join to word df 
@@ -61,37 +68,6 @@ word_df <- word_df %>%
 
 
 # 2. Exploring some basic sentiment analysis ------------------------------
-
-get_sentiments("bing") %>% 
-  group_by(sentiment) %>% 
-  summarize(n = n())
-
-nrcneg <- get_sentiments("bing") %>%
-  filter(sentiment=="negative")
-
-n_neg_words <- word_df %>%
-  inner_join(nrcneg) %>%
-  group_by(document_number, StoreId) %>%
-  summarise(n_neg = sum(n))
-
-## plot proportion of negative words over time
-
-ave_prop_neg <- n_neg_words %>%
-  inner_join(all_meta %>% 
-               select(year, StoreId, word_count)) %>%
-  mutate(prop_neg = n_neg/word_count) %>%
-  group_by(year) %>%
-  summarise(ave_neg_prop = mean(prop_neg), se_neg = sqrt(var(prop_neg)))
-
-
-ggplot(ave_prop_neg, 
-  aes(year, ave_neg_prop)) +
-    geom_line() + geom_point()+ 
-  #geom_ribbon(aes(ymax = ave_neg_prop+se_neg, ymin = ave_neg_prop-se_neg), alpha = 0.5)+
-  theme_bw()+
-  ggtitle("Average proportion of negative words per article")
-
-
 
 # try and do it for all nrc categories
 
@@ -173,10 +149,42 @@ pd <- word_sent_year %>%
     ) +
   coord_flip()+
     ggtitle("Top positive and negative words by year")
+ggsave("plots/sent_words_year.pdf", width = 12, height = 10)
+
+## do the same thing by period
+
+word_sent_period <- word_df %>%
+  inner_join(get_sentiments("bing")) %>%
+  filter(word!="trump") %>%
+  inner_join(all_meta %>% 
+               select(period, StoreId, word_count)) %>%
+  group_by(word, period, sentiment) %>%
+  summarise(n_word = sum(n), prop_word = n_word/sum(word_count)) %>%
+  arrange(period, -n_word)
+
+pd <- word_sent_period %>%
+  group_by(sentiment, period) %>%
+  top_n(10, wt = n_word) %>%
+  ungroup() %>%
+  arrange(period, sentiment, n_word) %>%
+  mutate(order=row_number())
 
 
+ggplot(pd, aes(order, n_word, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(sentiment~period, scales = "free") +
+  labs(y = "Contribution to sentiment",
+       x = NULL) +
+  scale_x_continuous(
+    breaks = pd$order,
+    labels = pd$word,
+    expand = c(0,0)
+  ) +
+  coord_flip()+
+  ggtitle("Top positive and negative words by period")
+ggsave("plots/sent_words_period.pdf", width = 12, height = 10)
 
-##
+## total sentiment scores by each year for each of the methods
 
 afinn <- word_df %>% 
   inner_join(get_sentiments("afinn")) %>% 
