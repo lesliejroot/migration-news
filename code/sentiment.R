@@ -156,7 +156,7 @@ ggplot(word_sent_year %>% filter(word %in% main_sent_words[[1]],
 
 afinn <- word_df %>% 
   inner_join(get_sentiments("afinn")) %>% 
-  filter(word!="trump") %>%
+  filter(word!="trump", word!="united") %>%
   inner_join(all_meta %>% 
                select(year, StoreId, word_count)) %>%
   group_by(year) %>% 
@@ -165,12 +165,12 @@ afinn <- word_df %>%
 
 bing_and_nrc <- bind_rows(word_df %>% 
                             inner_join(get_sentiments("bing")) %>%
-                            filter(word!="trump") %>%
+                            filter(word!="trump", word!="united") %>%
                             mutate(method = "Bing et al."),
                           word_df %>% 
                             inner_join(get_sentiments("nrc") %>% 
                                          filter(sentiment %in% c("positive", 
-                                                                 "negative"),word!="trump")) %>%
+                                                                 "negative"),word!="trump", word!="united")) %>%
                             mutate(method = "NRC")) %>%
   inner_join(all_meta %>% 
                select(year, StoreId, word_count)) %>%
