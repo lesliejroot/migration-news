@@ -92,18 +92,24 @@ im_year <- pre_immigrant %>%
   summarise(n_year = sum(n)) %>%
   arrange(year, -n_year)
 
+im_totals <- im_year %>%
+  group_by(year) %>%
+  summarise(n_immi = sum(n_year))
+
 pd <- im_year %>%
+  inner_join(im_totals) %>%
   group_by(year) %>%
   top_n(10, wt = n_year) %>%
   ungroup() %>%
   arrange(year, n_year) %>%
-  mutate(order=row_number())
+  mutate(prop_word = n_year/n_immi, 
+         order=row_number())
 
 
-ggplot(pd, aes(order, n_year)) +
+ggplot(pd, aes(order, prop_word)) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~year, scales = "free") +
-  labs(y = "Instances",
+  labs(y = "Proportion of total instances",
        x = NULL) +
   scale_x_continuous(
     breaks = pd$order,
@@ -112,5 +118,36 @@ ggplot(pd, aes(order, n_year)) +
   ) +
   coord_flip()+
   ggtitle("Words preceeding immigrant(s) or migrant(s)")
+ggsave("plots/bigram_immigration_year_barplot.pdf", width = 15, height = 10)
 
 
+# maybe do a line plot with common words. 
+# note "illegal" needs to be done separately
+immi_words_negative <- c( "illegal", "undocumented","unauthorized", "anti")
+immi_words_positive <- c("legal", "recent", "skilled")
+immi_words_eth <- c("mexican",  "muslim", "chinese", "asian", "latino", "hispanic")
+
+
+im_year %>%
+  inner_join(im_totals) %>%
+  filter(word1 %in% immi_words_negative) %>%
+  mutate(prop_word = n_year/n_immi) %>%
+  ggplot(aes(year, prop_word, color = word1)) + geom_point() + geom_line()+
+  theme_bw() + ggtitle("Negative words preceeding immigrant/migrant") + ylab("Proportion of instances")
+ggsave("plots/bigram_immigration_neg_year.pdf", width = 10, height = 7)
+
+im_year %>%
+  inner_join(im_totals) %>%
+  filter(word1 %in% immi_words_positive) %>%
+  mutate(prop_word = n_year/n_immi) %>%
+  ggplot(aes(year, prop_word, color = word1)) + geom_point() + geom_line()+
+  theme_bw() + ggtitle("Positive words preceeding immigrant/migrant") + ylab("Proportion of instances")
+ggsave("plots/bigram_immigration_pos_year.pdf", width = 10, height = 7)
+
+im_year %>%
+  inner_join(im_totals) %>%
+  filter(word1 %in% immi_words_eth) %>%
+  mutate(prop_word = n_year/n_immi) %>%
+  ggplot(aes(year, prop_word, color = word1)) + geom_point() + geom_line()+
+  theme_bw() + ggtitle("Ethnicities preceeding immigrant/migrant") + ylab("Proportion of instances")
+ggsave("plots/bigram_immigration_eth_year.pdf", width = 10, height = 7)
