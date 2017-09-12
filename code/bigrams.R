@@ -151,3 +151,100 @@ im_year %>%
   ggplot(aes(year, prop_word, color = word1)) + geom_point() + geom_line()+
   theme_bw() + ggtitle("Ethnicities preceeding immigrant/migrant") + ylab("Proportion of instances")
 ggsave("plots/bigram_immigration_eth_year.pdf", width = 10, height = 7)
+
+
+
+# 5. Tf_idf ---------------------------------------------------------------
+
+bigram_tf_idf <- bigrams_united %>%
+  count(document_number, bigram) %>%
+  bind_tf_idf(bigram, document_number, n) %>%
+  arrange(desc(tf_idf))
+
+bigram_tf_idf %>% 
+  group_by(bigram) %>% 
+  summarise(sum_tf_idf = sum(tf_idf)) %>%
+  arrange(-sum_tf_idf)
+
+
+# 6. Sentiment ------------------------------------------------------------
+
+AFINN <- get_sentiments("afinn")
+not_words <- bigrams_separated %>%
+  filter(word1 == "not") %>%
+  inner_join(AFINN, by = c(word2 = "word")) %>%
+  count(word2, score, sort = TRUE) %>%
+  ungroup()
+
+not_words
+not_words %>%
+  mutate(contribution = n * score) %>%
+  arrange(desc(abs(contribution))) %>%
+  head(20) %>%
+  mutate(word2 = reorder(word2, contribution)) %>%
+  ggplot(aes(word2, n * score, fill = n * score > 0)) +
+  geom_col(show.legend = FALSE) +
+  xlab("Words preceded by \"not\"") +
+  ylab("Sentiment score * number of occurrences") +
+  coord_flip() + theme_bw()
+ggsave("plots/bigram_not_barplot.pdf", width = 10, height = 7)
+
+
+trump_words <- bigrams_separated %>%
+  filter(word1 == "trump") %>%
+  inner_join(AFINN, by = c(word2 = "word")) %>%
+  count(word2, score, sort = TRUE) %>%
+  ungroup()
+
+trump_words
+trump_words %>%
+  mutate(contribution = n * score) %>%
+  arrange(desc(abs(contribution))) %>%
+  head(20) %>%
+  mutate(word2 = reorder(word2, contribution)) %>%
+  ggplot(aes(word2, n * score, fill = n * score > 0)) +
+  geom_col(show.legend = FALSE) +
+  xlab("Words preceded by \"Trump\"") +
+  ylab("Sentiment score * number of occurrences") +
+  coord_flip() + theme_bw()
+ggsave("plots/bigram_trump_barplot.pdf", width = 10, height = 7)
+
+
+obama_words <- bigrams_separated %>%
+  filter(word1 == "obama") %>%
+  inner_join(AFINN, by = c(word2 = "word")) %>%
+  count(word2, score, sort = TRUE) %>%
+  ungroup()
+
+obama_words
+obama_words %>%
+  mutate(contribution = n * score) %>%
+  arrange(desc(abs(contribution))) %>%
+  head(20) %>%
+  mutate(word2 = reorder(word2, contribution)) %>%
+  ggplot(aes(word2, n * score, fill = n * score > 0)) +
+  geom_col(show.legend = FALSE) +
+  xlab("Words preceded by \"Obama\"") +
+  ylab("Sentiment score * number of occurrences") +
+  coord_flip() + theme_bw()
+ggsave("plots/bigram_obama_barplot.pdf", width = 10, height = 7)
+
+
+immigrant_words <- bigrams_separated %>%
+  filter(word1 == "immigrants") %>%
+  inner_join(AFINN, by = c(word2 = "word")) %>%
+  count(word2, score, sort = TRUE) %>%
+  ungroup()
+
+immigrant_words
+immigrant_words %>%
+  mutate(contribution = n * score) %>%
+  arrange(desc(abs(contribution))) %>%
+  head(20) %>%
+  mutate(word2 = reorder(word2, contribution)) %>%
+  ggplot(aes(word2, n * score, fill = n * score > 0)) +
+  geom_col(show.legend = FALSE) +
+  xlab("Words preceded by \"immigrant\"") +
+  ylab("Sentiment score * number of occurrences") +
+  coord_flip() + theme_bw()
+ggsave("plots/bigram_immigrant_barplot.pdf", width = 10, height = 7)
