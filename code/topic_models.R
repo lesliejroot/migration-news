@@ -127,7 +127,7 @@ ggsave("./plots/tm_diff_2topic.pdf", width = 10, height = 7)
 
 ## more topics
 
-im_lda <- LDA(word_dtm, k = 10, control = list(seed = 1234))
+im_lda <- LDA(word_dtm, k = 8, control = list(seed = 1234))
 
 # betas are per-topic-per-word probabilities
 im_topics <- tidy(im_lda, matrix = "beta")
@@ -148,8 +148,8 @@ im_top_terms %>%
   facet_wrap(~ topic, scales = "free") +
   coord_flip()+
   theme_bw()+
-  ggtitle("Top words in a ten topic model")
-ggsave("./plots/tm_10topic.pdf", width = 10, height = 7)
+  ggtitle("Top words in an eight topic model")
+ggsave("./plots/tm_8topic.pdf", width = 10, height = 7)
 
 
 ## find articles that match these topics?
@@ -165,7 +165,7 @@ example_docs <- im_gamma %>%
   inner_join(all_meta %>% select(document_number, year, StoreId, Title, Abstract, subjectTerms)) %>%
   arrange(topic, -gamma)
 
-write_csv(example_docs, "./tables/example_documents_10topic.csv")
+write_csv(example_docs, "./tables/example_documents_8topic.csv")
 
 
 
