@@ -168,6 +168,32 @@ example_docs <- im_gamma %>%
 write_csv(example_docs, "./tables/example_documents_8topic.csv")
 
 
+# categorise each document based on max probability
 
+max_gamma <- im_gamma %>% 
+  group_by(document) %>%
+  filter(gamma == max(gamma)) %>%
+  ungroup() %>%
+  mutate(document = as.numeric(document)) %>%
+  arrange(document)
 
+# most probabilities are above 0.5
+hist(max_gamma$gamma)
+abline(v = 0.5)
+
+doc_counts <- all_meta %>% group_by(year) %>% summarise(n_doc = n())
+
+max_gamma %>%
+  mutate(document_number = as.numeric(document)) %>%
+  inner_join(all_meta %>% select(document_number, year, StoreId, Title, Abstract, subjectTerms)) %>%
+  inner_join(doc_counts) %>%
+  group_by(year, topic) %>%
+  summarise(n_doc_topic = n(), prop_doc_topic = n_doc_topic/min(n_doc)) %>%
+  mutate(topic_factor = factor(topic, levels = 1:8, labels = c("LA", "Europe", "Art", "Economy", "Chinese", "Trump", "Illegal", "Election"))) %>%
+  filter(topic %in% c(2,4,6,7,8)) %>%
+  ggplot(aes(year, prop_doc_topic, color = topic_factor)) + 
+  geom_line() + geom_point()+theme_bw()+
+  ggtitle("Proportion of documents in top five topics")+
+  scale_color_discrete(name = "Topic")
+ggsave("./plots/tm_doc_year_5.pdf", width = 10, height = 7)
 
