@@ -125,15 +125,17 @@ main_sent_words <- word_sent_year %>%
   ungroup() %>%
   select(word)
 
-ggplot(word_sent_year %>% filter(word %in% main_sent_words[[1]],  word!="issues",
+ggplot(word_sent_year %>% filter(word %in% main_sent_words[[1]],  word!="issues", word!="hard",
                                  sentiment=="negative"), aes(year, prop_word, color = word)) + 
   geom_line()+ geom_point() + theme_bw()+
   ggtitle("Top negative words") + ylab("Proprtion of all words")
 ggsave("./plots/sent_neg_year.pdf", height = 7, width = 10)
 
-ggplot(word_sent_year %>% filter(word %in% main_sent_words[[1]],  
+ggplot(word_sent_year %>% filter(word %in% main_sent_words[[1]],  word!="win",
                                  sentiment=="positive"), aes(year, prop_word, color = word)) + 
-  geom_line()
+  geom_line()+ geom_point() + theme_bw()+
+  ggtitle("Top positive words") + ylab("Proprtion of all words")
+ggsave("./plots/sent_pos_year.pdf", height = 7, width = 10)
 
 ## might be nice to see as a bar plot
 
