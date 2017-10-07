@@ -120,13 +120,16 @@ word_sent_year <- word_df %>%
   
 main_sent_words <- word_sent_year %>%
   group_by(year, sentiment) %>%
-  top_n(n = 3, wt = n_word) %>%
+  #group_by(sentiment) %>%
+  top_n(n = 2, wt = n_word) %>%
   ungroup() %>%
   select(word)
 
-ggplot(word_sent_year %>% filter(word %in% main_sent_words[[1]],  
+ggplot(word_sent_year %>% filter(word %in% main_sent_words[[1]],  word!="issues",
                                  sentiment=="negative"), aes(year, prop_word, color = word)) + 
-  geom_line()
+  geom_line()+ geom_point() + theme_bw()+
+  ggtitle("Top negative words") + ylab("Proprtion of all words")
+ggsave("./plots/sent_neg_year.pdf", height = 7, width = 10)
 
 ggplot(word_sent_year %>% filter(word %in% main_sent_words[[1]],  
                                  sentiment=="positive"), aes(year, prop_word, color = word)) + 
