@@ -1,3 +1,6 @@
+data/bigrams.Rda
+migration_blog.Rmd
+migration_blog.html
 .Rproj.user
 .Rhistory
 .RData

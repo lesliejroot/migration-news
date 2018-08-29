@@ -1,0 +1,13 @@
+---
+title: "Descriptives round 2"
+author: "Monica Alexander"
+date: "8/29/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Getting back into it... see what the files look like. 
+
