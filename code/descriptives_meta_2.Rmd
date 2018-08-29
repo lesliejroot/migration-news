@@ -63,13 +63,15 @@ md %>%
   ggplot(aes(date, n)) + geom_line() + 
   ggtitle("Number of migration articles per day") + 
   geom_vline(xintercept = mdy("11-08-2016"), color = "red", lty = 2) +
-  annotate("text", x=mdy("10-15-2016"), y=80, label= "election", color = "red", size = 5) +
+  annotate("text", x=mdy("10-10-2016"), y=80, label= "election", color = "red", size = 5) +
   geom_vline(xintercept = mdy("01-27-2017"), color = "blue", lty = 2) +
-  annotate("text", x=mdy("01-02-2017"), y=115, label= "travel ban", color = "blue", size = 5) +
+  annotate("text", x=mdy("12-23-2016"), y=115, label= "travel ban", color = "blue", size = 5) +
   geom_vline(xintercept = mdy("09-05-2017"), color = "darkgreen", lty = 2) +
-  annotate("text", x=mdy("08-17-2017"), y=55, label= "DACA", color = "darkgreen", size = 5) +
+  annotate("text", x=mdy("08-10-2017"), y=55, label= "DACA", color = "darkgreen", size = 5) +
+  geom_vline(xintercept = mdy("06-15-2018"), color = "purple", lty = 2) +
+  annotate("text", x=mdy("05-20-2018"), y=75, label= "family \n separation", color = "purple", size = 5) +
   theme_classic(base_size = 14)
-ggsave("../plots/number_day.pdf", height = 7, width =10)
+ggsave("../plots/number_day.pdf", height = 7, width =12)
 ```
 
 ```{r, fig.width=6}
@@ -143,7 +145,7 @@ ggplot(big_subs, aes(mon_year, prop, color = subjects_year)) +
 Plot interesting subjects by day? Trump, Donald J; Aliens; Mexico; National security; Deportation; Muslims; Russia
 
 ```{r}
-interesting <- c("Mexico", "National security", "Deportation", "Muslims", "Russia", "Federal court decisions", "Syria")
+interesting <- c("Mexico", "National security", "Deportation", "Muslims", "Russia", "Federal court decisions", "Syria", "Families & family life")
 
 dates <- unique(md$date)
 subject_all_years <- c()
@@ -168,5 +170,5 @@ subject_all_years %>%
   ylab("Cumulative total") + 
   theme_classic(base_size = 14)
 ggsave("../plots/cumulative_topics.pdf", height = 7, width =10)
- ```
 
+ ```
