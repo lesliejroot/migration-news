@@ -11,3 +11,64 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Getting back into it... see what the files look like. 
 
+```{r}
+library(tidyverse)
+library(lubridate)
+
+# read in all the meta data acsv files
+csv_files <- paste0("../data/raw/", list.files(path = "../data/raw",pattern = ".*.csv"))
+
+meta_df <- c()
+
+for(i in 1:length(csv_files)){
+  this_meta <- read_csv(csv_files[i])
+  meta_df <- bind_rows(meta_df, this_meta )
+}
+rm(this_meta)
+md <- meta_df
+rm(meta_df)
+
+```
+
+There seems to be 10,000 articles... this is less than what Leslie thought?
+
+Format the dates and plot the number of articles by day:
+
+```{r}
+md <- md %>% 
+  mutate(date = mdy(pubdate)) # thank you lubridate
+
+md %>% 
+  group_by(date) %>% 
+  summarise(n = n()) %>% 
+  ggplot(aes(date, n)) + geom_line() + 
+  ggtitle("Number of articles by day")
+```
+
+There's three noticable spikes: the election; the travel ban; and DACA. 
+
+```{r}
+md %>% 
+  group_by(date) %>% 
+  summarise(n = n()) %>% 
+  arrange(-n)
+```
+
+Do a nice chart:
+
+```{r}
+md %>% 
+  group_by(date) %>% 
+  summarise(n = n()) %>% 
+  ggplot(aes(date, n)) + geom_line() + 
+  ggtitle("Number of migration articles per day") + 
+  geom_vline(xintercept = mdy("11-08-2016"), color = "red", lty = 2) +
+  annotate("text", x=mdy("10-15-2016"), y=80, label= "election", color = "red", size = 5) +
+  geom_vline(xintercept = mdy("01-27-2017"), color = "blue", lty = 2) +
+  annotate("text", x=mdy("01-02-2017"), y=115, label= "travel ban", color = "blue", size = 5) +
+  geom_vline(xintercept = mdy("09-05-2017"), color = "darkgreen", lty = 2) +
+  annotate("text", x=mdy("08-17-2017"), y=55, label= "DACA", color = "darkgreen", size = 5) +
+  theme_classic(base_size = 14)
+ggsave("../plots/number_day.pdf", height = 7, width =10)
+```
+
