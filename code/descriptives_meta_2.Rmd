@@ -72,3 +72,101 @@ md %>%
 ggsave("../plots/number_day.pdf", height = 7, width =10)
 ```
 
+```{r, fig.width=6}
+source_year <- md %>% 
+  group_by(date, pubtitle) %>% 
+  summarise(n = n())
+
+source_year %>% 
+  mutate(two_digit_month = ifelse(nchar(month(date))==1, paste0(0, month(date)), as.character(month(date)))) %>% 
+  mutate(mon_year = paste(year(date), two_digit_month, sep = "-")) %>% 
+  group_by(mon_year, pubtitle) %>% 
+  summarise(n = sum(n)) %>% 
+ggplot(aes(mon_year, n, color = pubtitle)) + 
+  geom_point(size = 3)  + scale_color_brewer(palette="Set1", name = "Source") +
+  theme_gray(base_size = 16)+
+  ylab("Number") + xlab("Year-Month") + ggtitle("Number of articles by month and source") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+ggsave("../plots/source_month.pdf", height = 7, width =12)
+```
+
+Look at subject classifications. Top 20 subjects over whole period:
+
+```{r}
+# look at subjects of articles
+subjects_list <- strsplit(md$subjectTerms, split = " , ")
+subjects_vec <- unlist(subjects_list)
+subject_counts <- sort(table(subjects_vec), decreasing = T)
+head(c(subject_counts), 20)
+```
+
+Subjects by month
+
+```{r}
+
+md <- md %>% 
+  mutate(two_digit_month = ifelse(nchar(month(date))==1, paste0(0, month(date)), as.character(month(date)))) %>% 
+  mutate(mon_year = paste(year(date), two_digit_month, sep = "-")) 
+dates <- unique(md$mon_year)
+
+subject_all_years <- c()
+for(i in 1:length(dates)){
+  subjects_year <- unlist(subjects_list[which(md$mon_year==dates[i])])
+  subjects_year_count <- sort(table(subjects_year), decreasing = T)
+  subjects_year_df <- as.data.frame(subjects_year_count)
+  subjects_year_df$mon_year <- dates[i]
+  subject_all_years <- rbind(subject_all_years, subjects_year_df)
+}
+
+# calculate proportion 
+subject_all_years <- subject_all_years %>% 
+  group_by(mon_year) %>% 
+  mutate(prop = Freq/sum(Freq))
+```
+
+```{r}
+top5 <- subject_all_years %>% 
+  group_by(mon_year) %>% 
+  top_n(n= 5)
+
+subs <- as.character(unique(top5$subjects_year))
+
+big_subs <- subject_all_years %>% filter(subjects_year %in% subs)
+
+ggplot(big_subs, aes(mon_year, prop, color = subjects_year)) + 
+  geom_point() + geom_line() + 
+  #scale_x_continuous(breaks=seq(2008,2017, by =2))+ 
+  theme_minimal() + scale_color_discrete(name = "Subject") +
+  ylab("Propotion") + xlab("Year") + ggtitle("Proportion of articles mentioning subject") 
+```
+
+Plot interesting subjects by day? Trump, Donald J; Aliens; Mexico; National security; Deportation; Muslims; Russia
+
+```{r}
+interesting <- c("Mexico", "National security", "Deportation", "Muslims", "Russia", "Federal court decisions", "Syria")
+
+dates <- unique(md$date)
+subject_all_years <- c()
+for(i in 1:length(dates)){
+  subjects_year <- unlist(subjects_list[which(md$date==dates[i])])
+  subjects_year_count <- sort(table(subjects_year), decreasing = T)
+  subjects_year_df <- as.data.frame(subjects_year_count)
+  subjects_year_df$date <- dates[i]
+  subject_all_years <- rbind(subject_all_years, subjects_year_df)
+}
+
+
+subject_all_years %>% 
+  arrange(subjects_year,date) %>% 
+  group_by(subjects_year) %>% 
+  mutate(csum = cumsum(Freq)) %>% 
+  arrange(subjects_year,csum) %>% 
+  filter(subjects_year %in% interesting) %>% 
+  ggplot(aes(date, csum, color = subjects_year)) + geom_line(lwd = 1.2)+
+  ggtitle("Cumulative number of articles covering selected subjects")+
+  scale_color_discrete(name = "Subject") +
+  ylab("Cumulative total") + 
+  theme_classic(base_size = 14)
+ggsave("../plots/cumulative_topics.pdf", height = 7, width =10)
+ ```
+
