@@ -30,20 +30,29 @@ rm(meta_df)
 
 ```
 
-There seems to be 10,000 articles... this is less than what Leslie thought?
+We have 22313 articles. 
 
-Format the dates and plot the number of articles by day:
+Format the dates and plot the number of articles by day: also put indicator for obama v trump
 
 ```{r}
 md <- md %>% 
-  mutate(date = mdy(pubdate)) # thank you lubridate
+  mutate(date = mdy(pubdate),
+         pres = ifelse(year(date)<2016, "Obama", "Trump")) # thank you lubridate
 
 md %>% 
-  group_by(date) %>% 
+  group_by(date, pres) %>% 
   summarise(n = n()) %>% 
-  ggplot(aes(date, n)) + geom_line() + 
+  ggplot(aes(date, n, color = pres)) + geom_line() + 
   ggtitle("Number of articles by day")
 ```
+
+```{r}
+
+max(md$date[md$pres=="Obama"]) - min(md$date[md$pres=="Obama"])
+
+max(md$date[md$pres=="Trump"])  - min(md$date[md$pres=="Trump"])
+```
+
 
 There's three noticable spikes: the election; the travel ban; and DACA. 
 
@@ -54,10 +63,11 @@ md %>%
   arrange(-n)
 ```
 
-Do a nice chart:
+Do a nice chart for trump era:
 
 ```{r}
 md %>% 
+  filter(pres == "Trump") %>% 
   group_by(date) %>% 
   summarise(n = n()) %>% 
   ggplot(aes(date, n)) + geom_line() + 
@@ -73,6 +83,49 @@ md %>%
   theme_classic(base_size = 14)
 ggsave("../plots/number_day.pdf", height = 7, width =12)
 ```
+
+Lets do some stuff with both now. First, get rid of the first ten days of the trump era because we don't have them for obama, and add 8 years to the obama stuff so it's easy to plot. 
+
+```{r}
+bd <- md %>% 
+  filter(!(date %in% min(md$date[md$pres=="Trump"]):ymd("2016-07-28")))
+
+#check this
+
+bd %>% group_by(pres) %>% 
+  summarise(n = length(unique(bd$date)))
+
+## now make the dates overlap by adding 8 years to obama
+bd$date_adj <- bd$date
+bd$date_adj[bd$pres=="Obama"] <- bd$date[bd$pres=="Obama"] + years(8)
+
+```
+
+now plot
+
+
+```{r}
+bd %>% 
+  group_by(date_adj, pres) %>% 
+  summarise(n = n()) %>% 
+  ggplot(aes(date_adj, n, color = pres)) + geom_line() + 
+  ggtitle("Number of articles by day")
+ggsave("../plots/number_day_pres.pdf", width = 10, height = 7)
+```
+
+normalise the number
+
+```{r}
+bd %>% 
+  group_by(date_adj, pres) %>% 
+  summarise(n = n()) %>% 
+  group_by(pres) %>% 
+  mutate(prop = n/sum(n)) %>% 
+  ggplot(aes(date_adj, prop, color = pres)) + geom_line() + 
+  ggtitle("Articles by day (prop of total)")
+ggsave("../plots/number_day_pres_prop.pdf", width = 10, height = 7)
+```
+
 
 ```{r, fig.width=6}
 source_year <- md %>% 
