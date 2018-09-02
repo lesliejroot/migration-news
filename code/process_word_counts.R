@@ -13,8 +13,8 @@ load(file = "./data/all_documents.Rda")
 
 ## split up this into chunks, not sure how big these word count dfs are going to be 
 
-start_chunk <- c(1, 2000, 4000, 6000, 8000)
-end_chunk <- c(1999, 3999, 5999, 7999, length(all_documents))
+start_chunk <- c(1, 2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000, 18000)
+end_chunk <- c(1999, 3999, 5999, 7999, 9999, 11999, 13999, 15999, length(all_documents))
 
 registerDoParallel(cores=2)  
 getDoParWorkers() 
