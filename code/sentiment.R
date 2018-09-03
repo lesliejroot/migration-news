@@ -7,7 +7,7 @@ library(lubridate)
 
 word_df <- c()
 
-for(i in 1:5){
+for(i in 1:9){
   load(paste0("./data/word_counts_", i, ".Rda"))
   word_df <- rbind(word_df, all_word_counts_df)
 }
@@ -19,7 +19,7 @@ rm(all_word_counts_df)
 
 meta_word_df <- c()
 
-for(i in 1:5){
+for(i in 1:9){
   load(paste0("./data/meta_data_", i, ".Rda"))
   meta_word_df <- rbind(meta_word_df, all_meta_df)
 }
@@ -50,9 +50,20 @@ all_meta <- all_meta %>%
   mutate(mon_year = as.Date(paste(year(date), two_digit_month, "01", sep = "-"))) 
 
 # remove duplicate store ids
+# add some info about presidents
 
 all_meta <- all_meta %>%  group_by(StoreId) %>% 
-  filter(row_number()==1) %>%  ungroup()
+  filter(row_number()==1) %>%  ungroup() %>% 
+  mutate(date = mdy(pubdate),
+         pres = ifelse(year(date)<2016, "Obama", "Trump")) 
+
+# filter so have same amount of days 
+all_meta <- all_meta %>% 
+  filter(!(date %in% min(all_meta$date[all_meta$pres=="Trump"]):ymd("2016-07-28")))
+  
+## now make the dates overlap by adding 8 years to obama
+all_meta$date_adj <- all_meta$date
+all_meta$date_adj[all_meta$pres=="Obama"] <- all_meta$date[all_meta$pres=="Obama"] + years(8)
 
 # join to word df 
 word_df <- word_df %>%
@@ -68,14 +79,14 @@ nrc_words <- word_df %>%
   group_by(document_number, StoreId, sentiment) %>%
   summarise(n_sent = sum(n)) %>%
   inner_join(all_meta %>% 
-               select(date, StoreId, word_count)) %>%
+               select(date_adj, StoreId, word_count, pres)) %>%
   mutate(prop_sent = n_sent/word_count) %>%
-  group_by(date, sentiment) %>%
+  group_by(date_adj, sentiment, pres) %>%
   summarise(ave_prop_sent = mean(prop_sent))
 
 
 # not sure there's much here
-ggplot(nrc_words, aes(date, ave_prop_sent)) + facet_wrap(~sentiment) + geom_point()
+ggplot(nrc_words, aes(date_adj, ave_prop_sent, color = pres)) + facet_wrap(~sentiment) + geom_point()
 
 # what happened with that spike?
 
@@ -99,12 +110,12 @@ bing_words <- word_df %>%
   group_by(document_number, StoreId, sentiment) %>%
   summarise(n_sent = sum(n)) %>%
   inner_join(all_meta %>% 
-               select(date, StoreId, word_count)) %>%
+               select(date_adj, StoreId, word_count, pres)) %>%
   mutate(prop_sent = n_sent/word_count) %>%
-  group_by(date, sentiment) %>%
+  group_by(date_adj, pres, sentiment) %>%
   summarise(ave_prop_sent = mean(prop_sent))
 
-ggplot(bing_words, aes(date, ave_prop_sent)) + facet_grid(.~sentiment) + geom_line()
+ggplot(bing_words, aes(date_adj, ave_prop_sent, color = pres )) + facet_grid(.~sentiment) + geom_line()
 
 
 all_meta %>%  filter(date == ymd("2017-12-14")) %>%
@@ -183,10 +194,10 @@ afinn <- word_df %>%
   inner_join(get_sentiments("afinn")) %>% 
   filter(word!="trump", word!="united") %>%
   inner_join(all_meta %>% 
-               select(date, StoreId, word_count)) %>%
-  group_by(date) %>% 
+               select(date_adj, StoreId, word_count, pres)) %>%
+  group_by(date_adj, pres) %>% 
   summarise(sentiment = sum(score)) %>% 
-  mutate(method = "AFINN", index = date) 
+  mutate(method = "AFINN", index = date_adj) 
 
 bing_and_nrc <- bind_rows(word_df %>% 
                             inner_join(get_sentiments("bing")) %>%
@@ -208,11 +219,11 @@ bind_rows(afinn,
   ggplot(aes(index, sentiment, color = method)) + geom_line()
 
 afinn %>% 
-  ggplot(aes(index, sentiment)) + 
+  ggplot(aes(index, sentiment, color = pres)) + 
   geom_line() + #geom_point()+
   theme_bw() + xlab("date") +
   ggtitle("Sentiment over time (AFINN method)")
-ggsave("./plots/sentiment_year.pdf", height = 7, width = 10)
+ggsave("./plots/sentiment_year_pres.pdf", height = 7, width = 10)
 
 
 
