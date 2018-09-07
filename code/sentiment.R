@@ -221,12 +221,15 @@ bind_rows(afinn,
   ggplot(aes(index, sentiment, color = method)) + geom_line()
 
 afinn %>% 
-  ggplot(aes(index, sentiment, color = pres)) + 
-  geom_line() + #geom_point()+
+  ggplot(aes(index, sentiment, color = pres, fill = pres)) + 
+  #geom_line() + 
+  geom_point(alpha = 0.3)+
   theme_bw() + xlab("date") +
-  scale_color_brewer(name = "president", palette = "Set1", direction = -1) + 
-  ggtitle("Average daily sentiment")
-ggsave("./plots/sentiment_day_pres.pdf", height = 7, width = 12)
+  scale_color_brewer(name = "president", palette = "Set1", direction = -1) +
+  scale_fill_brewer(name = "president", palette = "Set1", direction = -1) +
+  ggtitle("Average daily sentiment")+
+  geom_smooth(span = 0.2)
+ggsave("./plots/sentiment_day_pres_smooth.pdf", height = 7, width = 12)
 
 
 afinn <- word_df %>% 
