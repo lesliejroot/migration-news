@@ -45,9 +45,7 @@ all_meta <- left_join(meta_df, meta_word_df, by = c("StoreId" = "id"))
 rm(meta_df, meta_word_df)
 
 all_meta <- all_meta %>% 
-  mutate(date = mdy(pubdate)) %>% 
-  mutate(two_digit_month = ifelse(nchar(month(date))==1, paste0(0, month(date)), as.character(month(date)))) %>% 
-  mutate(mon_year = as.Date(paste(year(date), two_digit_month, "01", sep = "-"))) 
+  mutate(date = mdy(pubdate))
 
 # remove duplicate store ids
 # add some info about presidents
@@ -65,6 +63,10 @@ all_meta <- all_meta %>%
 all_meta$date_adj <- all_meta$date
 all_meta$date_adj[all_meta$pres=="Obama"] <- all_meta$date[all_meta$pres=="Obama"] + years(8)
 
+
+all_meta <- all_meta %>% 
+  mutate(two_digit_month = ifelse(nchar(month(date_adj))==1, paste0(0, month(date_adj)), as.character(month(date_adj)))) %>% 
+  mutate(mon_year = as.Date(paste(year(date_adj), two_digit_month, "01", sep = "-"))) 
 # join to word df 
 word_df <- word_df %>%
   inner_join(all_meta %>% select(document_number, StoreId))
@@ -222,11 +224,27 @@ afinn %>%
   ggplot(aes(index, sentiment, color = pres)) + 
   geom_line() + #geom_point()+
   theme_bw() + xlab("date") +
-  ggtitle("Sentiment over time (AFINN method)")
-ggsave("./plots/sentiment_year_pres.pdf", height = 7, width = 10)
+  scale_color_brewer(name = "president", palette = "Set1", direction = -1) + 
+  ggtitle("Average daily sentiment")
+ggsave("./plots/sentiment_day_pres.pdf", height = 7, width = 12)
 
 
+afinn <- word_df %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  filter(word!="trump", word!="united", word!= "win", word!="won") %>%
+  inner_join(all_meta %>% 
+               select(mon_year, StoreId, word_count, pres)) %>%
+  group_by(mon_year, pres) %>% 
+  summarise(sentiment = sum(score)) %>% 
+  mutate(method = "AFINN", index = mon_year) 
 
+afinn %>% 
+  ggplot(aes(index, sentiment, color = pres)) + 
+  geom_line() + geom_point()+
+  theme_bw() + xlab("date") +
+  scale_color_brewer(name = "president", palette = "Set1", direction = -1) + 
+  ggtitle("Average monthly sentiment")
+ggsave("./plots/sentiment_month_pres.pdf", height = 7, width = 12)
 
 # 5. Tf_idf ---------------------------------------------------------------
 
