@@ -256,21 +256,32 @@ word_df <- word_df %>%
 
 tfidf <- word_df %>% 
   inner_join(all_meta %>% 
-               select(mon_year, StoreId)) %>%
+               select(mon_year, pres, StoreId)) %>%
+  filter(pres=="Trump") %>% 
   group_by(mon_year, word) %>% 
   summarise(sum_tfidf = sum(tf_idf))
 
 pd <- tfidf %>%
   group_by(mon_year) %>%
+  filter(word!="trump's") %>% 
   top_n(10, wt = sum_tfidf) %>%
   ungroup() %>%
   arrange(mon_year, sum_tfidf) %>%
   mutate(order=row_number())
 
-
-ggplot(pd, aes(order, sum_tfidf)) +
+pd %>% 
+  filter(mon_year %in% c(ymd("2016-08-01"), ymd("2017-01-01"), ymd("2017-09-01"), ymd("2018-06-01"))) %>% 
+  mutate(month_year = case_when(
+                      mon_year == ymd("2016-08-01") ~ "2016-08",
+                      mon_year == ymd("2017-01-01") ~ "2017-01",
+                      mon_year == ymd("2017-09-01") ~ "2017-09",
+                      mon_year == ymd("2018-06-01") ~ "2018-06",
+                      TRUE ~ "NA"
+                     )) %>% 
+  
+ggplot(aes(order, sum_tfidf, fill = month_year)) +
   geom_col(show.legend = FALSE) +
-  facet_wrap(~mon_year, scales = "free") +
+  facet_wrap(~month_year, scales = "free") +
   labs(y = "tf_idf (summed across all documents)",
        x = NULL) +
   scale_x_continuous(
@@ -279,9 +290,11 @@ ggplot(pd, aes(order, sum_tfidf)) +
     expand = c(0,0)
   ) +
   coord_flip()+
+  scale_fill_viridis_d()+
+  theme_bw(base_size = 14)+
   ggtitle("Important words by month")
   
-ggsave("plots/tf_idf_month_barplot.pdf", width = 15, height = 10)
+ggsave("plots/tf_idf_month_barplot_select.pdf", width = 12, height = 10)
 
 # do with daily data but just top 10 words overall
 tfidf <- word_df %>% 
