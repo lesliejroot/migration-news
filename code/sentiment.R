@@ -222,14 +222,13 @@ bind_rows(afinn,
 
 afinn %>% 
   ggplot(aes(index, sentiment, color = pres, fill = pres)) + 
-  #geom_line() + 
-  geom_point(alpha = 0.3)+
-  theme_bw() + xlab("date") +
+  geom_line() + 
+  #geom_point(alpha = 0.3)+
+  theme_classic(base_size = 14) + xlab("date") +
   scale_color_brewer(name = "president", palette = "Set1", direction = -1) +
   scale_fill_brewer(name = "president", palette = "Set1", direction = -1) +
-  ggtitle("Average daily sentiment")+
-  geom_smooth(span = 0.2)
-ggsave("./plots/sentiment_day_pres_smooth.pdf", height = 7, width = 12)
+  ggtitle("Average daily sentiment")
+ggsave("./plots/sentiment_day_pres.pdf", height = 7, width = 12)
 
 
 afinn <- word_df %>% 
@@ -291,8 +290,7 @@ ggplot(aes(order, sum_tfidf, fill = month_year)) +
   ) +
   coord_flip()+
   scale_fill_viridis_d()+
-  theme_bw(base_size = 14)+
-  ggtitle("Important words by month")
+  theme_bw(base_size = 14)
   
 ggsave("plots/tf_idf_month_barplot_select.pdf", width = 12, height = 10)
 
