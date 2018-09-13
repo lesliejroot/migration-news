@@ -229,7 +229,9 @@ afinn %>%
   scale_fill_brewer(name = "president", palette = "Set1", direction = -1) +
   ggtitle("Average daily sentiment")
 ggsave("./plots/sentiment_day_pres.pdf", height = 7, width = 12)
+# save the results
 
+write_csv(afinn %>% select(date_adj, pres, sentiment), "./output/sentiment_day_pres.csv")
 
 afinn <- word_df %>% 
   inner_join(get_sentiments("afinn")) %>% 
