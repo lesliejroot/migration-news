@@ -231,9 +231,9 @@ afinn %>%
   geom_vline(xintercept = mdy("09-17-2016"), color = "darkblue", lty = 2) +
   annotate("text", x=mdy("08-15-2016"), y=150, label= "Chelsea \nbombing", color = "darkblue", size = 5) +
   geom_vline(xintercept = mdy("01-27-2017"), color = "orange", lty = 2) +
-  annotate("text", x=mdy("12-23-2016"), y=160, label= "travel ban", color = "orange", size = 5) +
-  geom_vline(xintercept = mdy("09-05-2017"), color = "darkgreen", lty = 2) +
-  annotate("text", x=mdy("10-10-2017"), y=160, label= "New York\n van attack", color = "darkgreen", size = 5) +
+  annotate("text", x=mdy("12-20-2016"), y=160, label= "travel ban", color = "orange", size = 5) +
+  geom_vline(xintercept = mdy("10-31-2017"), color = "darkgreen", lty = 2) +
+  annotate("text", x=mdy("09-20-2017"), y=160, label= "New York\n van attack", color = "darkgreen", size = 5) +
   geom_vline(xintercept = mdy("06-15-2018"), color = "purple", lty = 2) +
   annotate("text", x=mdy("05-20-2018"), y=160, label= "family \n separation", color = "purple", size = 5) 
 ggsave("./plots/sentiment_day_pres.pdf", height = 7, width = 12)
